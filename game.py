@@ -71,7 +71,7 @@ def rodar_jogo():
     tamanho_cobra = 1
 
     pixels = []
-
+    
     comida_x, comida_y = gerar_comida()
     
     while not fim_jogo:
