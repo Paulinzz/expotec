@@ -125,16 +125,10 @@ def rodar_jogo():
         x += velocidade_x
         y += velocidade_y
 
-        # Checa se a cobra saiu dos limites da tela e teletransporta para o lado oposto
-        if x < 0:
-            x = largura - tamanho_quadrado
-        elif x >= largura:
-            x = 0
-        if y < 0:
-            y = altura - tamanho_quadrado
-        elif y >= altura:
-            y = 0
-
+        # checa se a cobra saiu dos limites da tela
+        if x < 0 or x >= largura or y < 0 or y >= altura:
+            fim_jogo = True
+            
         # Adiciona a nova posição da cabeça da cobra
         pixels.append([x, y])
         if len(pixels) > tamanho_cobra:
