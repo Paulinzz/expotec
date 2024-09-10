@@ -1,117 +1,158 @@
 import pygame
 import random
+import sys
 
-class Jogo:
-    def __init__(self):
-        pygame.init()
-        pygame.display.set_caption("Snake The Game")
+def inicializar_jogo():
+    pygame.init()
+    pygame.display.set_caption("Snake The Game")
+    largura, altura = 1200, 600
+    tela = pygame.display.set_mode((largura, altura))
+    relogio = pygame.time.Clock()
 
-        self.largura, self.altura = 1560, 760
-        self.tela = pygame.display.set_mode((self.largura, self.altura))
+    # Cores
+    preta = (0, 0, 0)
+    branca = (255, 255, 255)
+    vermelha = (255, 0, 0)
+    verde = (0, 255, 0)
 
-        self.relogio = pygame.time.Clock()
+    # Parâmetros da cobrinha
+    tamanho_quadrado = 20
+    velocidade_jogo = 15
 
-        # cores
-        self.preta = (0, 0, 0)
-        self.branca = (255, 255, 255)
-        self.vermelha = (255, 0, 0)
-        self.verde = (0, 255, 0)
+    return largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo
 
-        self.tamanho_quadrado = 20
-        self.velocidade_jogo = 15
+def exibir_mensagem(texto, tamanho_fonte, cor, posicao, tela):
+    fonte = pygame.font.SysFont("Helvetica", tamanho_fonte)
+    mensagem = fonte.render(texto, True, cor)
+    tela.blit(mensagem, posicao)
 
-        self.rodar_jogo()
+def tela_mensagem_inicial(tela, largura, altura, preta, branca):
+    tela.fill(preta)
+    exibir_mensagem("Bem-vindo ao Snake The Game!", 50, branca, (largura // 4, altura // 2 - 50), tela)
+    exibir_mensagem("Pressione qualquer tecla para continuar...", 35, branca, (largura // 4, altura // 2 + 50), tela)
+    pygame.display.update()
+    
+    # Espera o jogador pressionar qualquer tecla
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                return
 
-    def gerar_comida(self):
-        comida_x = round(random.randrange(0, self.largura - self.tamanho_quadrado) / float(self.tamanho_quadrado)) * float(self.tamanho_quadrado) 
-        comida_y = round(random.randrange(0, self.altura - self.tamanho_quadrado) / float(self.tamanho_quadrado)) * float(self.tamanho_quadrado) 
-        return comida_x, comida_y
+def exibir_menu_inicial(tela, largura, altura, preta, branca, verde):
+    tela.fill(preta)
+    exibir_mensagem("Menu Inicial", 50, branca, (largura // 3, altura // 3 - 50), tela)
+    exibir_mensagem("1. Jogar", 35, verde, (largura // 3, altura // 3 + 50), tela)
+    exibir_mensagem("2. Sair", 35, verde, (largura // 3, altura // 3 + 100), tela)
+    pygame.display.update()
 
-    def desenhar_comida(self, comida_x, comida_y):
-        pygame.draw.rect(self.tela, self.verde, [comida_x, comida_y, self.tamanho_quadrado, self.tamanho_quadrado])
+    # Espera o jogador selecionar a opção do menu
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_1:
+                    return  # Inicia o jogo
+                if evento.key == pygame.K_2:
+                    pygame.quit()
+                    sys.exit()
 
-    def desenhar_cobra(self, pixels):
-        for pixel in pixels:
-            pygame.draw.rect(self.tela, self.branca, [pixel[0], pixel[1], self.tamanho_quadrado, self.tamanho_quadrado])
+def gerar_comida(pixels, largura, altura, tamanho_quadrado):
+    while True:
+        comida_x = round(random.randrange(0, largura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado)
+        comida_y = round(random.randrange(0, altura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado)
+        if [comida_x, comida_y] not in pixels:
+            return comida_x, comida_y
 
-    def desenhar_pontuacao(self, pontuacao):
-        fonte = pygame.font.SysFont("Helvetica", 35)
-        texto = fonte.render(f"Pontos: {pontuacao}", True, self.vermelha)
-        self.tela.blit(texto, [1, 1])
+def desenhar_comida(tela, verde, tamanho, comida_x, comida_y):
+    pygame.draw.rect(tela, verde, [comida_x, comida_y, tamanho, tamanho])
 
-    def selecionar_velocidade(self, tecla):
-        if tecla == pygame.K_DOWN:
-            return 0, self.tamanho_quadrado
-        elif tecla == pygame.K_UP:
-            return 0, -self.tamanho_quadrado
-        elif tecla == pygame.K_RIGHT:
-            return self.tamanho_quadrado, 0
-        elif tecla == pygame.K_LEFT:
-            return -self.tamanho_quadrado, 0
-        return None  # retorna None se a tecla não for uma seta
+def desenhar_cobra(tela, branca, tamanho, pixels):
+    for pixel in pixels:
+        pygame.draw.rect(tela, branca, [pixel[0], pixel[1], tamanho, tamanho])
 
-    def ignorar_tecla_nao_seta(self, tecla):
-        if tecla not in [pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT]:
-            return True
-        return False #se a tecla digitada não é uma seta a cobrinha segue seu rumo até que uma seta seja clicada
+def desenhar_pontuacao(tela, vermelha, pontuacao):
+    fonte = pygame.font.SysFont("Helvetica", 35)
+    texto = fonte.render(f"Pontos: {pontuacao}", True, vermelha)
+    tela.blit(texto, [1, 1])
 
-    def rodar_jogo(self):
-        fim_jogo = False
-        x = self.largura / 2
-        y = self.altura / 2
-        velocidade_x = 0
-        velocidade_y = 0
-        tamanho_cobra = 1
+def selecionar_velocidade(tecla, velocidade_x, velocidade_y, tamanho_quadrado):
+    if tecla == pygame.K_DOWN and velocidade_y == 0:
+        return 0, tamanho_quadrado
+    elif tecla == pygame.K_UP and velocidade_y == 0:
+        return 0, -tamanho_quadrado
+    elif tecla == pygame.K_RIGHT and velocidade_x == 0:
+        return tamanho_quadrado, 0
+    elif tecla == pygame.K_LEFT and velocidade_x == 0:
+        return -tamanho_quadrado, 0
+    return velocidade_x, velocidade_y  # Mantém a direção atual
 
-        pixels = []
-        comida_x, comida_y = self.gerar_comida()
-        
-        while not fim_jogo:
-            self.tela.fill(self.preta)
-            for evento in pygame.event.get():
-                if evento.type == pygame.QUIT:
-                    fim_jogo = True
-                elif evento.type == pygame.KEYDOWN:
-                    if self.ignorar_tecla_nao_seta(evento.key):
-                        continue
-                    nova_velocidade = self.selecionar_velocidade(evento.key)
-                    if nova_velocidade:
-                        velocidade_x, velocidade_y = nova_velocidade
+def ignorar_tecla_nao_seta(tecla):
+    return tecla not in [pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT]
 
-            # atualizar a posição da cobra
-            x += velocidade_x
-            y += velocidade_y
+def rodar_jogo(largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo):
+    fim_jogo = False
+    x = largura / 2
+    y = altura / 2
+    velocidade_x = tamanho_quadrado  # Inicia movendo para a direita
+    velocidade_y = 0
+    tamanho_cobra = 1
+    pixels = []
+    comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
 
-            # checa se a cobra saiu dos limites da tela
-            if x < 0 or x >= self.largura or y < 0 or y >= self.altura:
+    while not fim_jogo:
+        tela.fill(preta)
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
                 fim_jogo = True
+            elif evento.type == pygame.KEYDOWN:
+                if ignorar_tecla_nao_seta(evento.key):
+                    continue
+                velocidade_x, velocidade_y = selecionar_velocidade(evento.key, velocidade_x, velocidade_y, tamanho_quadrado)
 
-            # adiciona a nova posição da cabeça da cobra
-            pixels.append([x, y])
-            if len(pixels) > tamanho_cobra:
-                del pixels[0]
+        # Atualizar a posição da cobra
+        x += velocidade_x
+        y += velocidade_y
+
+        # checa se a cobra saiu dos limites da tela
+        if x < 0 or x >= largura or y < 0 or y >= altura:
+            fim_jogo = True
             
-            # verifica se a cobra bateu no próprio corpo
-            for pixel in pixels[:-1]:
-                if pixel == [x, y]:
-                    fim_jogo = True
+        # Adiciona a nova posição da cabeça da cobra
+        pixels.append([x, y])
+        if len(pixels) > tamanho_cobra:
+            del pixels[0]
 
-            # desenha elementos na tela
-            self.desenhar_comida(comida_x, comida_y)
-            self.desenhar_cobra(pixels)
-            self.desenhar_pontuacao(tamanho_cobra - 1)
+        # Verifica se a cobra bateu no próprio corpo
+        if [x, y] in pixels[:-1]:
+            fim_jogo = True
 
-            # atualiza a tela
-            pygame.display.update()
+        # Desenha os elementos na tela
+        desenhar_comida(tela, verde, tamanho_quadrado, comida_x, comida_y)
+        desenhar_cobra(tela, branca, tamanho_quadrado, pixels)
+        desenhar_pontuacao(tela, vermelha, tamanho_cobra - 1)
 
-            # verifica se a cobra comeu a comida
-            if x == comida_x and y == comida_y:
-                tamanho_cobra += 1
-                comida_x, comida_y = self.gerar_comida()
+        # Atualiza a tela
+        pygame.display.update()
 
-            self.relogio.tick(self.velocidade_jogo)
+        # Verifica se a cobra comeu a comida
+        if x == comida_x and y == comida_y:
+            tamanho_cobra += 1
+            comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
 
-        pygame.quit()
+        # Controle da velocidade do jogo
+        relogio.tick(velocidade_jogo)
 
-if __name__ == "__main__":
-    Jogo()
+def iniciar_jogo():
+    largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo = inicializar_jogo()
+    tela_mensagem_inicial(tela, largura, altura, preta, branca)
+    exibir_menu_inicial(tela, largura, altura, preta, branca, verde)
+    rodar_jogo(largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo)
+    pygame.quit()
+
+# Inicia o jogo
+iniciar_jogo()
