@@ -29,8 +29,8 @@ tamanho_quadrado = 20
 velocidade_jogo = 15
 
 def gerar_comida():
-    comida_x = round(random.randrange(0, largura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado)
-    comida_y = round(random.randrange(0, altura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado)
+    comida_x = round(random.randrange(0, largura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado) 
+    comida_y = round(random.randrange(0, altura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado) 
     return comida_x, comida_y
 
 def desenhar_comida(tamanho, comida_x, comida_y):
