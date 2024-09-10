@@ -1,6 +1,7 @@
 # Configurações iniciais
 import pygame
 import random
+import sys
 
 pygame.init()
 pygame.display.set_caption("Snake The Game")
@@ -21,6 +22,48 @@ verde = (0, 255, 0)
 # Parâmetros da cobrinha
 tamanho_quadrado = 20
 velocidade_jogo = 15
+
+def exibir_mensagem(texto, tamanho_fonte, cor, posicao):
+    fonte = pygame.font.SysFont("Helvetica", tamanho_fonte)
+    mensagem = fonte.render(texto, True, cor)
+    tela.blit(mensagem, posicao)
+
+def tela_mensagem_inicial():
+    """Exibe uma mensagem antes do menu inicial"""
+    tela.fill(preta)
+    exibir_mensagem("Bem-vindo ao Snake The Game!", 50, branca, (largura // 4, altura // 2 - 50))
+    exibir_mensagem("Pressione qualquer tecla para continuar...", 35, branca, (largura // 4, altura // 2 + 50))
+    pygame.display.update()
+    
+    # Espera o jogador pressionar qualquer tecla
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                return
+
+def exibir_menu_inicial():
+    """Exibe o menu inicial para iniciar o jogo"""
+    tela.fill(preta)
+    exibir_mensagem("Menu Inicial", 50, branca, (largura // 3, altura // 3 - 50))
+    exibir_mensagem("1. Jogar", 35, verde, (largura // 3, altura // 3 + 50))
+    exibir_mensagem("2. Sair", 35, verde, (largura // 3, altura // 3 + 100))
+    pygame.display.update()
+
+    # Espera o jogador selecionar a opção do menu
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_1:
+                    return  # Inicia o jogo
+                if evento.key == pygame.K_2:
+                    pygame.quit()
+                    sys.exit()
 
 def gerar_comida(pixels):
     """Gera a posição da comida em locais que não estão ocupados pela cobra"""
@@ -117,5 +160,8 @@ def rodar_jogo():
         # Controle da velocidade do jogo
         relogio.tick(velocidade_jogo)
 
+# Exibe a mensagem inicial e o menu antes de iniciar o jogo
+tela_mensagem_inicial()
+exibir_menu_inicial()
 rodar_jogo()
 pygame.quit()
