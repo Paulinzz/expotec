@@ -2,7 +2,7 @@ import pygame
 import random
 import sys
 
-def inicializar_jogo():
+def programar_jogo():
     pygame.init()
     pygame.display.set_caption("Snake The Game")
     largura, altura = 1200, 600
@@ -94,14 +94,23 @@ def selecionar_velocidade(tecla, velocidade_x, velocidade_y, tamanho_quadrado):
 def ignorar_tecla_nao_seta(tecla):
     return tecla not in [pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT]
 
+def atualizar_cobra(x, y, velocidade_x, velocidade_y, tamanho_cobra, pixels):
+    x += velocidade_x
+    y += velocidade_y
+    pixels.append([x, y])
+    if len(pixels) > tamanho_cobra:
+        del pixels[0]
+    return x, y
+
+def verificar_colisoes(x, y, largura, altura, pixels):
+    if x < 0 or x >= largura or y < 0 or y >= altura or [x, y] in pixels[:-1]:
+        return True
+    return False
+
 def rodar_jogo(largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo):
-    fim_jogo = False
-    x = largura / 2
-    y = altura / 2
-    velocidade_x = tamanho_quadrado  # Inicia movendo para a direita
-    velocidade_y = 0
-    tamanho_cobra = 1
-    pixels = []
+    fim_jogo, x, y = False, largura / 2, altura / 2
+    velocidade_x, velocidade_y = tamanho_quadrado, 0
+    tamanho_cobra, pixels = 1, []
     comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
 
     while not fim_jogo:
@@ -109,46 +118,26 @@ def rodar_jogo(largura, altura, tela, relogio, preta, branca, vermelha, verde, t
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 fim_jogo = True
-            elif evento.type == pygame.KEYDOWN:
-                if ignorar_tecla_nao_seta(evento.key):
-                    continue
+            elif evento.type == pygame.KEYDOWN and not ignorar_tecla_nao_seta(evento.key):
                 velocidade_x, velocidade_y = selecionar_velocidade(evento.key, velocidade_x, velocidade_y, tamanho_quadrado)
 
-        # Atualizar a posição da cobra
-        x += velocidade_x
-        y += velocidade_y
-
-        # checa se a cobra saiu dos limites da tela
-        if x < 0 or x >= largura or y < 0 or y >= altura:
-            fim_jogo = True
-            
-        # Adiciona a nova posição da cabeça da cobra
-        pixels.append([x, y])
-        if len(pixels) > tamanho_cobra:
-            del pixels[0]
-
-        # Verifica se a cobra bateu no próprio corpo
-        if [x, y] in pixels[:-1]:
+        x, y = atualizar_cobra(x, y, velocidade_x, velocidade_y, tamanho_cobra, pixels)
+        if verificar_colisoes(x, y, largura, altura, pixels):
             fim_jogo = True
 
-        # Desenha os elementos na tela
         desenhar_comida(tela, verde, tamanho_quadrado, comida_x, comida_y)
         desenhar_cobra(tela, branca, tamanho_quadrado, pixels)
         desenhar_pontuacao(tela, vermelha, tamanho_cobra - 1)
 
-        # Atualiza a tela
-        pygame.display.update()
-
-        # Verifica se a cobra comeu a comida
         if x == comida_x and y == comida_y:
             tamanho_cobra += 1
             comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
 
-        # Controle da velocidade do jogo
+        pygame.display.update()
         relogio.tick(velocidade_jogo)
 
 def iniciar_jogo():
-    largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo = inicializar_jogo()
+    largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo = programar_jogo()
     tela_mensagem_inicial(tela, largura, altura, preta, branca)
     exibir_menu_inicial(tela, largura, altura, preta, branca, verde)
     rodar_jogo(largura, altura, tela, relogio, preta, branca, vermelha, verde, tamanho_quadrado, velocidade_jogo)
