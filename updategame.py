@@ -43,19 +43,19 @@ def main_menu():
 
         mx, my = pygame.mouse.get_pos()
 
-        button_1 = pygame.Rect(300, 250, 200, 50)
-        button_2 = pygame.Rect(300, 350, 200, 50)
+        butao_1 = pygame.Rect(300, 250, 200, 50)
+        butao_2= pygame.Rect(300, 350, 200, 50)
 
-        if button_1.collidepoint((mx, my)):
+        if butao_1.collidepoint((mx, my)):
             if click:
                 rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo)
-        if button_2.collidepoint((mx, my)):
+        if butao_2.collidepoint((mx, my)):
             if click:
                 pygame.quit()
                 sys.exit()
 
-        pygame.draw.rect(tela, branca, button_1)
-        pygame.draw.rect(tela, branca, button_2)
+        pygame.draw.rect(tela, branca, butao_1)
+        pygame.draw.rect(tela, branca, butao_2)
 
         draw_text('Jogar', fonte, preta, tela, 370, 260)
         draw_text('Sair', fonte, preta, tela, 370, 360)
