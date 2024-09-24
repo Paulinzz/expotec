@@ -133,7 +133,7 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
     # Registrar a pontuação e exibir o ranking
     registrar_pontuacao(jogador, tamanho_cobra - 1)
     main_menu
-    # exibir_ranking()
+    #exibir_ranking() 
 
 def gerar_comida(pixels, largura, altura, tamanho_quadrado):
     while True:
