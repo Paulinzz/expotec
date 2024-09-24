@@ -66,6 +66,7 @@ def main_menu():
 
         button_1 = pygame.Rect(300, 250, 200, 50)
         button_2 = pygame.Rect(300, 350, 200, 50)
+        button_3 = pygame.Rect(300, 450, 200, 50)
 
         if button_1.collidepoint((mx, my)):
             if click:
@@ -75,11 +76,16 @@ def main_menu():
             if click:
                 pygame.quit()
                 sys.exit()
+        if button_3.collidepoint((mx, my)):
+            if click:
+                exibir_ranking()
 
         pygame.draw.rect(tela, branca, button_1)
         pygame.draw.rect(tela, branca, button_2)
+        pygame.draw.rect(tela, branca, button_3)
 
         draw_text('Jogar', fonte, preta, tela, 370, 260)
+        draw_text('Ranking', fonte, preta, tela, 345, 460)
         draw_text('Sair', fonte, preta, tela, 370, 360)
 
         click = False
@@ -126,7 +132,8 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
 
     # Registrar a pontuação e exibir o ranking
     registrar_pontuacao(jogador, tamanho_cobra - 1)
-    exibir_ranking()
+    main_menu
+    # exibir_ranking()
 
 def gerar_comida(pixels, largura, altura, tamanho_quadrado):
     while True:
