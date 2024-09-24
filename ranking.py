@@ -31,6 +31,29 @@ def draw_text(text, font, color, surface, x, y):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
+# Função para inserir o nome do jogador
+def inserir_nick(tela, fonte, branca, preta):
+    nick = ''
+    inserindo = True
+    while inserindo:
+        tela.fill(preta)
+        draw_text('Digite seu nome:', fonte, branca, tela, 300, 100)
+        draw_text(nick, fonte, branca, tela, 300, 200)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:  # Pressionar Enter para confirmar
+                    if nick != '':
+                        return nick
+                elif event.key == pygame.K_BACKSPACE:
+                    nick = nick[:-1]
+                else:
+                    nick += event.unicode
+
 # Função para exibir o menu inicial
 def main_menu():
     largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
@@ -46,7 +69,8 @@ def main_menu():
 
         if button_1.collidepoint((mx, my)):
             if click:
-                rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo)
+                jogador = inserir_nick(tela, fonte, branca, preta)
+                rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo, jogador)
         if button_2.collidepoint((mx, my)):
             if click:
                 pygame.quit()
@@ -70,14 +94,12 @@ def main_menu():
         pygame.display.update()
 
 # Funções do jogo da cobrinha
-def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo):
+def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo, jogador):
     relogio = pygame.time.Clock()
     fim_jogo, x, y = False, largura / 2, altura / 2
     velocidade_x, velocidade_y = tamanho_quadrado, 0
     tamanho_cobra, pixels = 1, []
     comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
-    fim_jogo = False
-    pontuação = 0
 
     while not fim_jogo:
         tela.fill(preta)
@@ -94,7 +116,6 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
         desenhar_comida(tela, verde, tamanho_quadrado, comida_x, comida_y)
         desenhar_cobra(tela, branca, tamanho_quadrado, pixels)
         desenhar_pontuacao(tela, vermelha, tamanho_cobra - 1, fonte)
-        
 
         if x == comida_x and y == comida_y:
             tamanho_cobra += 1
@@ -103,15 +124,9 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
         pygame.display.update()
         relogio.tick(velocidade_jogo)
 
-    if fim_jogo:
-        nome = input("Digite seu nome: ")
-        salvar_pontuação(nome,pontuação)
-        pontuação = desenhar_pontuacao
-    
-
-
-    # Retorna ao menu após o jogo terminar
-    main_menu()
+    # Registrar a pontuação e exibir o ranking
+    registrar_pontuacao(jogador, tamanho_cobra - 1)
+    exibir_ranking()
 
 def gerar_comida(pixels, largura, altura, tamanho_quadrado):
     while True:
@@ -155,59 +170,62 @@ def verificar_colisoes(x, y, largura, altura, pixels):
         return True
     return False
 
-def salvar_pontuação(nome, pontuação):
-    with open("ranking.txt", "a") as arquvio:
-        arquvio.write(f"{nome}/{pontuação}")
+# Função para registrar a pontuação
+def registrar_pontuacao(jogador, pontuacao):
+    with open('ranking.txt', 'a') as arq:
+        arq.write(jogador + '\n')
+        arq.write(str(pontuacao) + '\n')
 
-def carregar_ranking():
+def ler_e_ordenar_ranking():
+    with open('ranking.txt') as arq:
+        linhas = arq.readlines()
+
     ranking = []
-    try:
-        with open("ranking.txt", "r") as arquivo:
-            for linha in arquivo.readlines():
-                nome, pontuação = linha.strip().split(":")
-                ranking.append((nome, int(pontuação)))
-        ranking.sort(key=lambda x: x[1], reverse=True)
-    except FileNotFoundError:
-        pass
-    return ranking
+    for i in range(0, len(linhas), 2):
+        nome = linhas[i].strip()
+        pontuacao = int(linhas[i + 1].strip())
+        ranking.append([pontuacao, nome])
 
-def atualizar_pontuacao(nome, nova_pontuacao):
-    ranking = carregar_ranking()  # Carrega o ranking atual
-    jogador_existente = False
+    # Ordena o ranking por pontuação em ordem decrescente
+    return sorted(ranking, reverse=True)
 
-    # Verifica se o jogador já está no ranking
-    for i, (jogador, pontuacao) in enumerate(ranking):
-        if jogador == nome:
-            jogador_existente = True
-            if nova_pontuacao > pontuacao:  # Atualiza se a nova pontuação for maior
-                ranking[i] = (nome, nova_pontuacao)
-            break
+# Função para exibir o ranking
+def exibir_ranking():
+    largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
+    click = False
 
-    # Se o jogador não está no ranking, adiciona a nova pontuação
-    if not jogador_existente:
-        ranking.append((nome, nova_pontuacao))
+    while True:
+        tela.fill(preta)
+        draw_text('Ranking', fonte, branca, tela, 300, 100)
 
-    # Reordena o ranking
-    ranking.sort(key=lambda x: x[1], reverse=True)
+        # Chama a função para ler e ordenar o ranking
+        ranking_ordenado = ler_e_ordenar_ranking()
 
-    # Salva o ranking atualizado de volta no arquivo
-    with open('ranking.txt', 'w') as arquivo:
-        for jogador, pontuacao in ranking:
-            arquivo.write(f'{jogador},{pontuacao}\n')
+        # Exibe os 7 melhores jogadores
+        y_offset = 200
+        for pontuacao, nome in ranking_ordenado[:7]:
+            draw_text(f"{nome} - {pontuacao}", fonte, branca, tela, 300, y_offset)
+            y_offset += 40
 
+        # Botão para voltar ao menu
+        mx, my = pygame.mouse.get_pos()
+        button_voltar = pygame.Rect(300, 500, 200, 50)
 
-def exibir_ranking(tela, fonte):
-    tela.fill(0,0,0)
-    ranking = carregar_ranking()
-    
-    if not ranking:
-        draw_text("Nenhum ranking foi achado...", fonte, (255,255,255), tela, (100,100))
-    else:
-        draw_text("ranking", fonte, (255,255,255), tela, (300, 50 ))
-        for i,(nome,pontuanção) in enumerate(ranking[:5]):
-            texto = (f"{i+1}. {nome} - {pontuanção}pontos")
-            draw_text(texto, fonte, (255,255,255), tela, (100, 100 + i * 50 ))
-    pygame.display.update()
+        if button_voltar.collidepoint((mx, my)) and click:
+            main_menu()
+
+        pygame.draw.rect(tela, branca, button_voltar)
+        draw_text('Voltar ao Menu', fonte, preta, tela, 300, 510)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                click = True
+
+        pygame.display.update()
 
 # Inicializa o menu
 main_menu()
