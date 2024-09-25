@@ -2,10 +2,6 @@ import pygame
 import random
 import sys
 
-# Proximas ideias a serem implementadas:
-# - Implementar a escolha de controles
-# - Implementar sons no game
-
 # Inicializando o Pygame
 pygame.init()
 
@@ -69,13 +65,12 @@ def desenhar_botoes_menu(tela, fonte, branca, preta):
     button_1 = pygame.Rect(300, 250, 200, 50)
     button_2 = pygame.Rect(300, 350, 200, 50)
     button_3 = pygame.Rect(300, 450, 200, 50)
-    button_controles = pygame.Rect(300,550,200,50)
+    button_controles = pygame.Rect(300, 550, 200, 50)
     
     pygame.draw.rect(tela, branca, button_1)
     pygame.draw.rect(tela, branca, button_2)
     pygame.draw.rect(tela, branca, button_3)
     pygame.draw.rect(tela, branca, button_controles)
-
 
     draw_text('Jogar', fonte, preta, tela, 370, 260)
     draw_text('Sair', fonte, preta, tela, 370, 360)
@@ -97,8 +92,8 @@ def verificar_cliques_menu(mx, my, click, button_1, button_2, button_3, button_c
     if button_controles.collidepoint((mx, my)) and click:
         return 'controles', None
     return None, None
-    
 
+# Função para exibir a tela de seleção de controles
 def selecionar_controles():
     largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
     click = False
@@ -106,7 +101,7 @@ def selecionar_controles():
 
     while True:
         tela.fill(preta)
-        draw_text('Selecione seus controles:', fonte, branca, tela, 200, 100)
+        draw_text('Selecione seus controles:', fonte, branca, tela, 250, 100)
 
         # Botões de controle
         button_wasd = pygame.Rect(300, 250, 200, 50)
@@ -128,8 +123,7 @@ def selecionar_controles():
         if button_setas.collidepoint((mx, my)) and click:
             controles_selecionados = 'setas'
         if button_voltar.collidepoint((mx, my)) and click:
-            return controles_selecionados  # Retorna o controle selecionado
-        
+            return controles_selecionados
 
         click = False
         for event in pygame.event.get():
@@ -141,13 +135,11 @@ def selecionar_controles():
 
         pygame.display.update()
 
-
-
 # Função para exibir o menu inicial
 def main_menu():
     largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
     click = False
-    controles_sel = 'setas'  # Controle padrão
+    controles_selecionados = 'setas'  # Padrão de controles
 
     while True:
         button_1, button_2, button_3, button_controles = desenhar_botoes_menu(tela, fonte, branca, preta)
@@ -156,12 +148,11 @@ def main_menu():
         acao, jogador = verificar_cliques_menu(mx, my, click, button_1, button_2, button_3, button_controles, tela, fonte, branca, preta)
 
         if acao == 'play':
-            rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo, jogador, controles_sel)
+            rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo, jogador, controles_selecionados)
         elif acao == 'ranking':
             exibir_ranking()
         elif acao == 'controles':
-            controles_sel = selecionar_controles()  # Armazena a escolha de controle
-            
+            controles_selecionados = selecionar_controles()
 
         click = False
         for event in pygame.event.get():
@@ -173,7 +164,7 @@ def main_menu():
 
         pygame.display.update()
 
-
+# Função para rodar o jogo com base na escolha de controles
 def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo, jogador, controles_selecionados):
     relogio = pygame.time.Clock()
     fim_jogo, x, y = False, largura / 2, altura / 2
@@ -189,47 +180,22 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
             elif evento.type == pygame.KEYDOWN:
                 if controles_selecionados == 'setas':
                     velocidade_x, velocidade_y = movimentar_setas(evento.key, velocidade_x, velocidade_y, tamanho_quadrado)
-                elif controles_selecionados == 'wasd':
+                else:
                     velocidade_x, velocidade_y = movimentar_wasd(evento.key, velocidade_x, velocidade_y, tamanho_quadrado)
 
-        x, y = atualizar_cobra(x, y, velocidade_x, velocidade_y, tamanho_cobra, pixels)
-        if verificar_colisoes(x, y, largura, altura, pixels):
-            fim_jogo = True
+        x, y = x + velocidade_x, y + velocidade_y
+        fim_jogo = verificar_fim_jogo(x, y, largura, altura, pixels)
 
-        desenhar_comida(tela, verde, tamanho_quadrado, comida_x, comida_y)
-        desenhar_cobra(tela, branca, tamanho_quadrado, pixels)
-        desenhar_pontuacao(tela, vermelha, tamanho_cobra - 1, fonte)
-
-        if x == comida_x and y == comida_y:
-            tamanho_cobra += 1
-            comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
+        desenhar_cobra(tela, verde, pixels, tamanho_cobra, x, y)
+        comida_x, comida_y, tamanho_cobra = verificar_colisao_comida(x, y, comida_x, comida_y, tamanho_cobra, tamanho_quadrado, largura, altura, tela, vermelha)
 
         pygame.display.update()
         relogio.tick(velocidade_jogo)
 
-    # Registrar a pontuação e exibir o ranking
-    registrar_pontuacao(jogador, tamanho_cobra - 1)
-    main_menu()
+    pygame.quit()
+    sys.exit()
 
-
-def gerar_comida(pixels, largura, altura, tamanho_quadrado):
-    while True:
-        comida_x = round(random.randrange(0, largura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado)
-        comida_y = round(random.randrange(0, altura - tamanho_quadrado) / float(tamanho_quadrado)) * float(tamanho_quadrado)
-        if [comida_x, comida_y] not in pixels:
-            return comida_x, comida_y
-
-def desenhar_comida(tela, verde, tamanho, comida_x, comida_y):
-    pygame.draw.rect(tela, verde, [comida_x, comida_y, tamanho, tamanho])
-
-def desenhar_cobra(tela, branca, tamanho, pixels):
-    for pixel in pixels:
-        pygame.draw.rect(tela, branca, [pixel[0], pixel[1], tamanho, tamanho])
-
-def desenhar_pontuacao(tela, vermelha, pontuacao, fonte):
-    texto = fonte.render(f"Pontos: {pontuacao}", True, vermelha)
-    tela.blit(texto, [1, 1])
-
+# Funções auxiliares para movimentação com WASD e setas
 def movimentar_setas(tecla, velocidade_x, velocidade_y, tamanho_quadrado):
     if tecla == pygame.K_LEFT and velocidade_x == 0:
         return -tamanho_quadrado, 0
@@ -252,77 +218,7 @@ def movimentar_wasd(tecla, velocidade_x, velocidade_y, tamanho_quadrado):
         return 0, tamanho_quadrado
     return velocidade_x, velocidade_y
 
-def atualizar_cobra(x, y, velocidade_x, velocidade_y, tamanho_cobra, pixels):
-    x += velocidade_x
-    y += velocidade_y
-    pixels.append([x, y])
-    if len(pixels) > tamanho_cobra:
-        del pixels[0]
-    return x, y
-
-def verificar_colisoes(x, y, largura, altura, pixels):
-    if x < 0 or x >= largura or y < 0 or y >= altura or [x, y] in pixels[:-1]:
-        return True
-    return False
-
-# Função para registrar a pontuação
-def registrar_pontuacao(jogador, pontuacao):
-    with open('ranking.txt', 'a') as arq:
-        arq.write(jogador + '\n')
-        arq.write(str(pontuacao) + '\n')
-
-def ler_e_ordenar_ranking():
-    with open('ranking.txt') as arq:
-        linhas = arq.readlines()
-
-    ranking = []
-    for i in range(0, len(linhas), 2):
-        nome = linhas[i].strip()
-        pontuacao = int(linhas[i + 1].strip())
-        ranking.append([pontuacao, nome])
-
-    # Ordena o ranking por pontuação em ordem decrescente
-    return sorted(ranking, reverse=True)
-
-# Função para exibir o ranking
-def exibir_ranking():
-    largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
-    click = False
-
-    while True:
-        tela.fill(preta)
-        draw_text('Ranking', fonte, branca, tela, 300, 100)
-
-        # Chama a função para ler e ordenar o ranking
-        ranking_ordenado = ler_e_ordenar_ranking()
-
-        # Exibe os 7 melhores jogadores
-        y_offset = 200
-        for pontuacao, nome in ranking_ordenado[:7]:
-            draw_text(f"{nome} - {pontuacao}", fonte, branca, tela, 300, y_offset)
-            y_offset += 40
-
-        # Botão para voltar ao menu
-        mx, my = pygame.mouse.get_pos()
-        button_voltar = pygame.Rect(300, 500, 200, 50)
-
-        if button_voltar.collidepoint((mx, my)) and click:
-            main_menu()
-
-        pygame.draw.rect(tela, branca, button_voltar)
-        draw_text('Voltar ao Menu', fonte, preta, tela, 300, 510)
-
-        click = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                click = True
-
-        pygame.display.update()
-
-# Inicializa o menu
+# Função principal do jogo
 def main():
     main_menu()
 

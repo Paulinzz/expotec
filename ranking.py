@@ -11,6 +11,8 @@ def configurar_jogo():
     tela = pygame.display.set_mode((largura, altura))
     pygame.display.set_caption('Snake The Game')
     fonte = pygame.font.SysFont('Arial', 40)
+    icone = pygame.image.load("OIP.jpeg") 
+    pygame.display.set_icon(icone)
     
     # Definindo cores
     branca = (255, 255, 255)
