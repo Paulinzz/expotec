@@ -3,7 +3,7 @@ import random
 import sys
 
 # Proximas ideias a serem implementadas:
-# - Implementar a escolha de controles
+# - Implementar a escolha de controles (melhorar no caso, quando o usario clicar ele seja direcionado para o jogo)
 # - Implementar sons no game
 
 # Inicializando o Pygame
