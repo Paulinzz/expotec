@@ -2,6 +2,10 @@ import pygame
 import random
 import sys
 
+# Proximas ideias a serem implementadas:
+# - Implementar a escolha de controles
+# - Implementar sons no game
+
 # Inicializando o Pygame
 pygame.init()
 
@@ -90,7 +94,7 @@ def verificar_cliques_menu(mx, my, click, button_1, button_2, button_3, tela, fo
 def main_menu():
     largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
     click = False
-
+    
     while True:
         button_1, button_2, button_3 = desenhar_botoes_menu(tela, fonte, branca, preta)
 
@@ -125,7 +129,7 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
             if evento.type == pygame.QUIT:
                 fim_jogo = True
             elif evento.type == pygame.KEYDOWN:
-                velocidade_x, velocidade_y = selecionar_velocidade(evento.key, velocidade_x, velocidade_y, tamanho_quadrado)
+                velocidade_x, velocidade_y = movimentar(evento.key, velocidade_x, velocidade_y, tamanho_quadrado)
 
         x, y = atualizar_cobra(x, y, velocidade_x, velocidade_y, tamanho_cobra, pixels)
         if verificar_colisoes(x, y, largura, altura, pixels):
@@ -165,7 +169,7 @@ def desenhar_pontuacao(tela, vermelha, pontuacao, fonte):
     texto = fonte.render(f"Pontos: {pontuacao}", True, vermelha)
     tela.blit(texto, [1, 1])
 
-def selecionar_velocidade(tecla, velocidade_x, velocidade_y, tamanho_quadrado):
+def movimentar(tecla, velocidade_x, velocidade_y, tamanho_quadrado):
     if tecla == pygame.K_DOWN and velocidade_y == 0:
         return 0, tamanho_quadrado
     elif tecla == pygame.K_UP and velocidade_y == 0:
