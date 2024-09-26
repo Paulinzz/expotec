@@ -67,20 +67,20 @@ def desenhar_botoes_menu(tela, fonte, branca, preta):
 
     # Botões
     button_1 = pygame.Rect(300, 250, 200, 50)
-    button_2 = pygame.Rect(300, 350, 200, 50)
+    button_controles = pygame.Rect(300, 350, 200, 50)
     button_3 = pygame.Rect(300, 450, 200, 50)
-    button_controles = pygame.Rect(300,550,200,50)
+    button_2 = pygame.Rect(300,550,200,50)
     
     pygame.draw.rect(tela, branca, button_1)
-    pygame.draw.rect(tela, branca, button_2)
-    pygame.draw.rect(tela, branca, button_3)
     pygame.draw.rect(tela, branca, button_controles)
+    pygame.draw.rect(tela, branca, button_3)
+    pygame.draw.rect(tela, branca, button_2)
 
 
     draw_text('Jogar', fonte, preta, tela, 370, 260)
-    draw_text('Sair', fonte, preta, tela, 370, 360)
+    draw_text('Controles', fonte, preta, tela, 345, 360)
     draw_text('Ranking', fonte, preta, tela, 345, 460)
-    draw_text('Controles', fonte, preta, tela, 345, 560)
+    draw_text('Sair', fonte, preta, tela, 370, 560)
 
     return button_1, button_2, button_3, button_controles
 
@@ -89,13 +89,14 @@ def verificar_cliques_menu(mx, my, click, button_1, button_2, button_3, button_c
     if button_1.collidepoint((mx, my)) and click:
         jogador = inserir_nick(tela, fonte, branca, preta)
         return 'play', jogador
-    if button_2.collidepoint((mx, my)) and click:
-        pygame.quit()
-        sys.exit()
+    if button_controles.collidepoint((mx, my)) and click:
+        return 'controles', None 
     if button_3.collidepoint((mx, my)) and click:
         return 'ranking', None
-    if button_controles.collidepoint((mx, my)) and click:
-        return 'controles', None
+    if button_2.collidepoint((mx, my)) and click:
+        pygame.quit()
+        sys.exit() 
+        # fechando o game
     return None, None
     
 
@@ -139,6 +140,7 @@ def selecionar_controles():
         # Se o controle foi selecionado, exibe a mensagem "Controle Selecionado"
         if controle_selecionado:
             draw_text('Controle Selecionado', fonte, vermelha, tela, 200, 150)
+            pygame.time.delay(1)
 
         click = False
         for event in pygame.event.get():
