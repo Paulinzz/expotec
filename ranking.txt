@@ -82,3 +82,13 @@ jp
 3
 hp
 0
+jp
+10
+bateu
+1
+sons
+3
+hp
+2
+jp
+6

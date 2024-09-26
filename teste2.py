@@ -8,6 +8,7 @@ import sys
 
 # Inicializando o Pygame
 pygame.init()
+pygame.mixer.init() # som 
 
 # Função para configurar as variáveis principais e retornar seus valores
 def configurar_jogo():
@@ -76,6 +77,7 @@ def desenhar_botoes_menu(tela, fonte, branca, preta, verde, vermelha):
     draw_text('Menu Inicial', fonte, branca, tela, 300, 100)
 
     mx, my = pygame.mouse.get_pos()
+   
 
     # Cores dos botões ao passar o mouse
     cor_jogar = vermelha if pygame.Rect(300, 250, 200, 50).collidepoint(mx, my) else branca
@@ -103,12 +105,20 @@ def desenhar_botoes_menu(tela, fonte, branca, preta, verde, vermelha):
 
 # Função para lidar com cliques do menu
 def verificar_cliques_menu(mx, my, click, button_1, button_sair, button_ranking, button_controles, tela, fonte, branca, preta):
+    
+     # som
+    som_click = pygame.mixer.Sound('click.mp3')
+
     if button_1.collidepoint((mx, my)) and click:
+        som_click.play()
         jogador = inserir_nick(tela, fonte, branca, preta)
+        som_click.play()
         return 'play', jogador
     if button_controles.collidepoint((mx, my)) and click:
+        som_click.play()
         return 'controles', None 
     if button_ranking.collidepoint((mx, my)) and click:
+        som_click.play()
         return 'ranking', None
     if button_sair.collidepoint((mx, my)) and click:
         pygame.quit()
@@ -124,6 +134,9 @@ def selecionar_controles():
     while True:
         tela.fill(preta)
         draw_text('Selecione seus controles:', fonte, branca, tela, 200, 100)
+
+        # som
+        som_click = pygame.mixer.Sound('click.mp3')
 
         # Botões de controle
         button_wasd = pygame.Rect(300, 250, 200, 50)
@@ -141,12 +154,15 @@ def selecionar_controles():
         mx, my = pygame.mouse.get_pos()
 
         if button_wasd.collidepoint((mx, my)) and click:
+            som_click.play()
             controles_selecionados = 'wasd'
             controle_selecionado = True  # Marca que o controle foi selecionado
         if button_setas.collidepoint((mx, my)) and click:
+            som_click.play()
             controles_selecionados = 'setas'
             controle_selecionado = True  # Marca que o controle foi selecionado
         if button_voltar.collidepoint((mx, my)) and click:
+            som_click.play()
             return controles_selecionados  # Retorna o controle selecionado
 
         # Se o controle foi selecionado, exibe a mensagem "Controle Selecionado"
@@ -174,6 +190,9 @@ def main_menu():
     aparecimento(tela, preta, largura, altura)
     controles_sel = 'setas'  # Controle padrão
 
+     # som
+    som_click = pygame.mixer.Sound('click.mp3')
+
     while True:
         button_1, button_2, button_3, button_controles = desenhar_botoes_menu(tela, fonte, branca, preta, vermelha, verde)
 
@@ -183,8 +202,10 @@ def main_menu():
         if acao == 'play':
             rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo, jogador, controles_sel)
         elif acao == 'ranking':
+            som_click.play()
             exibir_ranking()
         elif acao == 'controles':
+            som_click.play()
             controles_sel = selecionar_controles()  # Armazena a escolha de controle
 
         click = False
@@ -204,6 +225,9 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
     tamanho_cobra, pixels = 1, []
     comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
 
+    som_comendo = pygame.mixer.Sound('comer.mp3')
+    bateu = pygame.mixer.Sound('bateu.mp3')
+
     while not fim_jogo:
         tela.fill(preta)
         for evento in pygame.event.get():
@@ -217,6 +241,8 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
 
         x, y = atualizar_cobra(x, y, velocidade_x, velocidade_y, tamanho_cobra, pixels)
         if verificar_colisoes(x, y, largura, altura, pixels):
+            bateu.set_volume(0.3)
+            bateu.play()
             fim_jogo = True
 
         desenhar_comida(tela, verde, tamanho_quadrado, comida_x, comida_y)
@@ -226,6 +252,8 @@ def rodar_jogo(largura, altura, tela, fonte, branca, preta, verde, vermelha, tam
         if x == comida_x and y == comida_y:
             tamanho_cobra += 1
             comida_x, comida_y = gerar_comida(pixels, largura, altura, tamanho_quadrado)
+            som_comendo.set_volume(0.4)
+            som_comendo.play()
 
         pygame.display.update()
         relogio.tick(velocidade_jogo)
