@@ -99,10 +99,14 @@ def verificar_cliques_menu(mx, my, click, button_1, button_2, button_3, button_c
     return None, None
     
 
+import pygame
+import sys
+
 def selecionar_controles():
     largura, altura, tela, fonte, branca, preta, verde, vermelha, tamanho_quadrado, velocidade_jogo = configurar_jogo()
     click = False
     controles_selecionados = 'setas'  # Padrão de controles
+    controle_selecionado = False  # Controla se um controle já foi selecionado
 
     while True:
         tela.fill(preta)
@@ -125,11 +129,16 @@ def selecionar_controles():
 
         if button_wasd.collidepoint((mx, my)) and click:
             controles_selecionados = 'wasd'
+            controle_selecionado = True  # Marca que o controle foi selecionado
         if button_setas.collidepoint((mx, my)) and click:
             controles_selecionados = 'setas'
+            controle_selecionado = True  # Marca que o controle foi selecionado
         if button_voltar.collidepoint((mx, my)) and click:
             return controles_selecionados  # Retorna o controle selecionado
-        
+
+        # Se o controle foi selecionado, exibe a mensagem "Controle Selecionado"
+        if controle_selecionado:
+            draw_text('Controle Selecionado', fonte, vermelha, tela, 200, 150)
 
         click = False
         for event in pygame.event.get():
@@ -140,6 +149,7 @@ def selecionar_controles():
                 click = True
 
         pygame.display.update()
+
 
 
 
