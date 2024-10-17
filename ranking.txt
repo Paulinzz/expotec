@@ -1,2 +1,8 @@
 jp
 3
+jogador 1
+9
+TESTE
+8
+WASD
+4
