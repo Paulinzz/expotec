@@ -1,8 +1,17 @@
-jp
+joao
+5
+joao
+0
+joao
 3
+<<<<<<< HEAD
 jogador 1
 9
 TESTE
 8
 WASD
 4
+=======
+wasd
+2
+>>>>>>> 2c7ac9b5902eceac545ec8eb72695d64189a52fc
